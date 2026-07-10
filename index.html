@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Faym Outreach Sender</title>
+<style>
+  :root{
+    --bg:#0f1410;
+    --panel:#161d18;
+    --panel-2:#1c241e;
+    --line:#2a352c;
+    --text:#e9efe8;
+    --muted:#8fa190;
+    --accent:#5fd88a;
+    --accent-dim:#2f5c40;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: "SF Mono", "Roboto Mono", monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:var(--font-ui); min-height:100vh;}
+
+  header{
+    padding:18px 28px; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  }
+  header h1{font-size:17px; font-weight:650; margin:0;}
+  header h1 span{color:var(--accent);}
+  header .sub{color:var(--muted); font-size:12.5px;}
+
+  nav.tabs{
+    display:flex; gap:4px; padding:12px 28px 0; border-bottom:1px solid var(--line);
+    max-width:1000px; margin:0 auto;
+  }
+  nav.tabs button{
+    background:none; border:none; color:var(--muted); font-family:var(--font-ui);
+    font-size:13px; font-weight:650; padding:10px 16px; cursor:pointer;
+    border-bottom:2px solid transparent; margin-bottom:-1px;
+  }
+  nav.tabs button.active{color:var(--accent); border-bottom-color:var(--accent);}
+  nav.tabs button:hover{color:var(--text);}
+  nav.tabs button .badge{
+    font-size:10.5px; color:var(--muted); background:var(--panel-2);
+    border-radius:10px; padding:1px 7px; margin-left:6px;
+  }
+
+  main{max-width:1000px; margin:0 auto; padding:28px 20px 80px;}
+  .tabpanel{display:none;}
+  .tabpanel.active{display:block;}
+
+  p.hint{color:var(--muted); font-size:13.5px; line-height:1.6; margin-top:0;}
+
+  textarea.raw{
+    width:100%; min-height:260px; background:var(--panel); border:1px solid var(--line);
+    border-radius:10px; color:var(--text); font-family:var(--font-mono); font-size:12.5px;
+    padding:14px; resize:vertical; line-height:1.5;
+  }
+  textarea.raw:focus{outline:none; border-color:var(--accent-dim);}
+
+  .row{display:flex; gap:10px; align-items:center; margin-top:16px; flex-wrap:wrap;}
+  button{
+    font-family:var(--font-ui); font-size:13px; font-weight:600; border-radius:7px;
+    border:1px solid var(--line); background:var(--panel-2); color:var(--text);
+    padding:10px 16px; cursor:pointer;
+  }
+  button:hover{border-color:var(--accent-dim); background:#1f2a22;}
+  button.primary{background:var(--accent); color:#0b1a10; border-color:var(--accent);}
+  button.primary:hover{filter:brightness(1.08);}
+  button:active{transform:scale(0.98);}
+  .count-pill{
+    font-size:11.5px; color:var(--muted); background:var(--panel-2);
+    border:1px solid var(--line); padding:4px 10px; border-radius:20px;
+  }
+
+  ul.userlist{list-style:none; margin:20px 0 0; padding:0;}
+  ul.userlist li{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:9px 12px; border-bottom:1px solid var(--line); font-size:13px;
+  }
+  ul.userlist li:first-child{border-top:1px solid var(--line);}
+  ul.userlist .n{color:var(--muted); font-family:var(--font-mono); font-size:11px; width:26px;}
+  ul.userlist a{color:var(--text); text-decoration:none; font-weight:600;}
+  ul.userlist a:hover{color:var(--accent);}
+
+  .toolbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; gap:12px; flex-wrap:wrap;}
+
+  .msg-card, .send-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:14px 16px; margin-bottom:10px;
+  }
+  .msg-card .name, .send-card .name{font-weight:650; font-size:13.5px; margin-bottom:8px;}
+  textarea.msg{
+    width:100%; min-height:70px; background:var(--panel-2); border:1px solid var(--line);
+    border-radius:8px; color:var(--text); font-size:13px; line-height:1.5; padding:10px 12px;
+    resize:vertical; font-family:var(--font-ui);
+  }
+  textarea.msg:focus{outline:none; border-color:var(--accent-dim);}
+  .msg-card .actions{margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;}
+  .msg-card .actions button{padding:6px 11px; font-size:11.5px;}
+
+  .send-card{display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap;}
+  .send-card.done{border-color:var(--accent-dim); opacity:0.55;}
+  .send-card .left{display:flex; flex-direction:column; gap:2px; flex:1; min-width:220px;}
+  .send-card .left .idx{font-family:var(--font-mono); font-size:11px; color:var(--muted);}
+  .send-card a{color:var(--text); text-decoration:none; font-weight:650; font-size:14px; border-bottom:1px solid var(--accent-dim);}
+  .send-card a:hover{color:var(--accent);}
+  .send-card .preview{
+    margin-top:6px; font-size:12.5px; line-height:1.5; color:var(--muted);
+    background:var(--panel-2); border:1px solid var(--line); border-radius:8px;
+    padding:9px 11px; max-width:520px;
+  }
+  .send-card .right{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+  .copied-flag{font-size:11.5px; color:var(--accent); opacity:0; transition:opacity .2s;}
+  .copied-flag.show{opacity:1;}
+  .sent-check{display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600; color:var(--muted); cursor:pointer; user-select:none;}
+  .sent-check input{width:16px; height:16px; accent-color:var(--accent); cursor:pointer;}
+  .sent-check.is-sent{color:var(--accent);}
+
+  .empty{text-align:center; color:var(--muted); padding:60px 20px; font-size:13.5px;}
+
+  .pool-editor{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:16px 18px; margin:14px 0 22px;
+  }
+  .pool-grid{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));
+    gap:12px; margin-top:12px;
+  }
+  .pool-field label{
+    display:block; font-size:11.5px; font-weight:650; color:var(--muted);
+    text-transform:uppercase; letter-spacing:0.4px; margin-bottom:6px;
+  }
+  textarea.pool-box{
+    width:100%; min-height:150px; background:var(--panel-2); border:1px solid var(--line);
+    border-radius:8px; color:var(--text); font-size:12.5px; line-height:1.6; padding:9px 10px;
+    resize:vertical; font-family:var(--font-ui);
+  }
+  textarea.pool-box:focus{outline:none; border-color:var(--accent-dim);}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Faym <span>Outreach Sender</span></h1>
+  <div class="sub" id="headerSub">Start on "Get usernames"</div>
+</header>
+
+<nav class="tabs">
+  <button class="active" data-tab="usernames" onclick="switchTab('usernames')">1. Get usernames</button>
+  <button data-tab="messages" onclick="switchTab('messages')">2. Message options <span class="badge" id="msgBadge">0</span></button>
+  <button data-tab="send" onclick="switchTab('send')">3. Send <span class="badge" id="sendBadge">0/0</span></button>
+</nav>
+
+<main>
+
+  <!-- TAB 1: GET USERNAMES -->
+  <section class="tabpanel active" id="tab-usernames">
+    <p class="hint">Paste rows copied from your sheet (tab-separated). Any columns are fine — the tool pulls out the username and the Instagram link automatically. Header rows are skipped.</p>
+    <textarea class="raw" id="rawInput" placeholder="deep_sikha_94	www.instagram.com/deep_sikha_94	Sent	8287920768	Hi! We came across your content..."></textarea>
+    <div class="row">
+      <button class="primary" onclick="parseUsernames()">Extract usernames →</button>
+      <span class="count-pill" id="parseCount">0 rows detected</span>
+    </div>
+    <ul class="userlist" id="userList"></ul>
+  </section>
+
+  <!-- TAB 2: MESSAGE OPTIONS -->
+  <section class="tabpanel" id="tab-messages">
+    <div class="toolbar">
+      <p class="hint" style="margin:0;">Each creator gets a differently-worded message so nothing looks copy-pasted. Shuffle any one, or all at once.</p>
+      <div class="row" style="margin-top:0;">
+        <button onclick="togglePoolEditor()" id="poolEditorToggle">✏️ Edit wording options</button>
+        <button onclick="shuffleAll()">🔀 Shuffle all</button>
+      </div>
+    </div>
+
+    <div id="poolEditor" class="pool-editor" style="display:none;">
+      <p class="hint">One phrase per line. These are the building blocks every message is assembled from — edit, add, or delete freely, then hit Apply.</p>
+      <div class="pool-grid">
+        <div class="pool-field">
+          <label>Openers</label>
+          <textarea id="pool-o" class="pool-box"></textarea>
+        </div>
+        <div class="pool-field">
+          <label>Hook / discovery line</label>
+          <textarea id="pool-d" class="pool-box"></textarea>
+        </div>
+        <div class="pool-field">
+          <label>Emoji</label>
+          <textarea id="pool-e" class="pool-box"></textarea>
+        </div>
+        <div class="pool-field">
+          <label>Pitch / invite</label>
+          <textarea id="pool-i" class="pool-box"></textarea>
+        </div>
+        <div class="pool-field">
+          <label>CTA</label>
+          <textarea id="pool-c" class="pool-box"></textarea>
+        </div>
+      </div>
+      <div class="row">
+        <button class="primary" onclick="applyPoolEdits()">Apply changes</button>
+        <button onclick="resetPoolEdits()">Reset this panel</button>
+        <span class="count-pill" id="poolApplyMsg"></span>
+      </div>
+    </div>
+
+    <div id="msgList"></div>
+  </section>
+
+  <!-- TAB 3: SEND -->
+  <section class="tabpanel" id="tab-send">
+    <div class="toolbar">
+      <p class="hint" style="margin:0;">Copy the message and open the profile in one click, then paste it into their DMs. Check the box once sent.</p>
+      <button onclick="downloadHandoverCopy()">⬇ Download handover copy</button>
+    </div>
+    <div id="sendList"></div>
+  </section>
+
+</main>
+
+<script>
+// Captured before any rendering touches the DOM, so it's a clean template to re-export.
+const PRISTINE_HTML = document.documentElement.outerHTML;
+
+let rows = [];
+
+// ---------- Phrase pools for variation (editable via the "Edit wording options" panel) ----------
+let openers = ["Hi!", "Hey!", "Hello!", "Hi there!"];
+let discovery = [
+  "we came across your content and it really stood out",
+  "we came across your profile and genuinely loved your content",
+  "we noticed your page and really liked what you're putting out",
+  "your content caught our eye recently",
+  "we've been following your page and love your work",
+  "we spotted your profile and thought your content was great"
+];
+let emojis = ["❤️", "✨", "🔥", "🙌"];
+let invites = [
+  "we'd love to onboard you for our campaigns at Faym",
+  "we'd love to have you on board with Faym for some campaigns",
+  "we think you'd be a great fit for our creator campaigns at Faym",
+  "we'd love to team up with you for a few campaigns at Faym"
+];
+let ctas = [
+  "drop your contact and let's connect!",
+  "share your number and we'll take it from there!",
+  "let us know if you're interested and we'll get you set up!",
+  "drop your number if you'd like to hear more!",
+  "reply here or drop your contact and we'll take it forward!"
+];
+
+function pick(arr, n){ return arr[((n % arr.length) + arr.length) % arr.length]; }
+function randIndex(arr){ return Math.floor(Math.random()*arr.length); }
+function randomParts(){
+  return { o: randIndex(openers), d: randIndex(discovery), e: randIndex(emojis), i: randIndex(invites), c: randIndex(ctas) };
+}
+function buildMessage(parts){
+  const o = pick(openers, parts.o);
+  const d = pick(discovery, parts.d);
+  const e = pick(emojis, parts.e);
+  const i = pick(invites, parts.i);
+  const c = pick(ctas, parts.c);
+  return `${o} ${d.charAt(0).toUpperCase()+d.slice(1)} ${e} ${i.charAt(0).toUpperCase()+i.slice(1)} ${c}`;
+}
+
+// ---------- Pool editor ----------
+function togglePoolEditor(){
+  const panel = document.getElementById('poolEditor');
+  const showing = panel.style.display !== 'none';
+  if(showing){
+    panel.style.display = 'none';
+  }else{
+    resetPoolEdits();
+    panel.style.display = 'block';
+  }
+}
+
+function resetPoolEdits(){
+  document.getElementById('pool-o').value = openers.join('\n');
+  document.getElementById('pool-d').value = discovery.join('\n');
+  document.getElementById('pool-e').value = emojis.join('\n');
+  document.getElementById('pool-i').value = invites.join('\n');
+  document.getElementById('pool-c').value = ctas.join('\n');
+  document.getElementById('poolApplyMsg').textContent = '';
+}
+
+function linesFrom(id){
+  return document.getElementById(id).value.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+}
+
+function applyPoolEdits(){
+  const newO = linesFrom('pool-o');
+  const newD = linesFrom('pool-d');
+  const newE = linesFrom('pool-e');
+  const newI = linesFrom('pool-i');
+  const newC = linesFrom('pool-c');
+
+  if(!newO.length || !newD.length || !newE.length || !newI.length || !newC.length){
+    alert("Each pool needs at least one line — can't leave one empty.");
+    return;
+  }
+
+  openers = newO;
+  discovery = newD;
+  emojis = newE;
+  invites = newI;
+  ctas = newC;
+
+  // Existing per-row picks are still valid indices (pick() wraps via modulo),
+  // but re-shuffle everyone so the new wording actually shows up.
+  if(rows.length){
+    shuffleAll();
+    renderSendList();
+  }
+
+  document.getElementById('poolApplyMsg').textContent = 'Applied ✓ — messages updated';
+  setTimeout(()=>{ document.getElementById('poolApplyMsg').textContent = ''; }, 2500);
+}
+
+// ---------- Tabs ----------
+function switchTab(name){
+  document.querySelectorAll('.tabpanel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+  document.querySelector(`nav.tabs button[data-tab="${name}"]`).classList.add('active');
+}
+
+// ---------- Tab 1: parsing ----------
+function parseUsernames(){
+  const raw = document.getElementById('rawInput').value;
+  const lines = raw.split(/\r?\n/).map(l=>l.trim()).filter(l=>l.length>0);
+  const parsed = [];
+
+  lines.forEach(line=>{
+    if(/^number\s+message$/i.test(line.trim())) return;
+
+    const numberMatch = line.match(/\b\d{8,15}\b/);
+    const linkMatch = line.match(/https?:\/\/\S*instagram\.com\S*|www\.instagram\.com\S*|instagram\.com\/\S+/i);
+
+    const tokens = line.split('\t').map(t=>t.trim()).filter(t=>t.length>0);
+    if(tokens.length === 0) return;
+
+    let message = tokens.reduce((a,b)=> b.length > a.length ? b : a, "");
+    let username = tokens.find(t => t !== message && !/instagram\.com/i.test(t) && !/^\d{8,15}$/.test(t) && !/^(sent|pending|replied)$/i.test(t));
+    if(!username) username = tokens[0];
+    username = username.replace(/[\[\]]/g,'').trim();
+    if(!username) return;
+
+    parsed.push({
+      username,
+      link: linkMatch ? (linkMatch[0].startsWith('http') ? linkMatch[0] : 'https://'+linkMatch[0].replace(/^www\./,'www.')) : `https://www.instagram.com/${username}`,
+      number: numberMatch ? numberMatch[0] : '—',
+      sent: false
+    });
+  });
+
+  document.getElementById('parseCount').textContent = `${parsed.length} rows detected`;
+  if(parsed.length === 0){
+    alert("Couldn't find any usable rows — make sure each line has a username, tab-separated from the rest.");
+    return;
+  }
+
+  rows = parsed;
+  rows.forEach(row=>{ row.parts = randomParts(); });
+
+  renderUserList();
+  renderMessages();
+  renderSendList();
+  document.getElementById('headerSub').textContent = `${rows.length} creators loaded`;
+}
+
+function renderUserList(){
+  const ul = document.getElementById('userList');
+  ul.innerHTML = '';
+  rows.forEach((row, idx)=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="n">#${idx+1}</span><a href="${row.link}" target="_blank" rel="noopener">${row.username}</a><span></span>`;
+    ul.appendChild(li);
+  });
+}
+
+// ---------- Tab 2: messages ----------
+function renderMessages(){
+  document.getElementById('msgBadge').textContent = rows.length;
+  const list = document.getElementById('msgList');
+  list.innerHTML = '';
+  if(rows.length === 0){
+    list.innerHTML = `<div class="empty">Extract usernames first.</div>`;
+    return;
+  }
+  rows.forEach((row, idx)=>{
+    const card = document.createElement('div');
+    card.className = 'msg-card';
+    card.innerHTML = `
+      <div class="name">${row.username}</div>
+      <textarea class="msg" id="msg-${idx}" oninput="rows[${idx}].message = this.value">${row.message || buildMessage(row.parts)}</textarea>
+      <div class="actions">
+        <button onclick="shuffleOne(${idx})">🔀 Shuffle all</button>
+        <button onclick="shufflePart(${idx},'o')">↻ Opener</button>
+        <button onclick="shufflePart(${idx},'d')">↻ Hook</button>
+        <button onclick="shufflePart(${idx},'e')">↻ Emoji</button>
+        <button onclick="shufflePart(${idx},'i')">↻ Pitch</button>
+        <button onclick="shufflePart(${idx},'c')">↻ CTA</button>
+      </div>
+    `;
+    list.appendChild(card);
+    if(!row.message) row.message = document.getElementById(`msg-${idx}`).value;
+  });
+}
+
+function shuffleOne(idx){
+  rows[idx].parts = randomParts();
+  rows[idx].message = buildMessage(rows[idx].parts);
+  const box = document.getElementById(`msg-${idx}`);
+  if(box) box.value = rows[idx].message;
+}
+
+function shufflePart(idx, key){
+  const pools = { o: openers, d: discovery, e: emojis, i: invites, c: ctas };
+  let next;
+  do { next = randIndex(pools[key]); } while(next === rows[idx].parts[key] && pools[key].length > 1);
+  rows[idx].parts[key] = next;
+  rows[idx].message = buildMessage(rows[idx].parts);
+  const box = document.getElementById(`msg-${idx}`);
+  if(box) box.value = rows[idx].message;
+}
+
+function shuffleAll(){
+  rows.forEach((r,idx)=>{
+    r.parts = randomParts();
+    r.message = buildMessage(r.parts);
+    const box = document.getElementById(`msg-${idx}`);
+    if(box) box.value = r.message;
+  });
+}
+
+// ---------- Tab 3: send ----------
+function renderSendList(){
+  updateSendBadge();
+  const list = document.getElementById('sendList');
+  list.innerHTML = '';
+  if(rows.length === 0){
+    list.innerHTML = `<div class="empty">Extract usernames first.</div>`;
+    return;
+  }
+  rows.forEach((row, idx)=>{
+    const card = document.createElement('div');
+    card.className = 'send-card' + (row.sent ? ' done' : '');
+    card.id = `send-${idx}`;
+    card.innerHTML = `
+      <div class="left">
+        <span class="idx">#${idx+1}</span>
+        <a href="${row.link}" target="_blank" rel="noopener">${row.username}</a>
+        <div class="preview">${row.message || buildMessage(row.parts)}</div>
+      </div>
+      <div class="right">
+        <span class="copied-flag" id="flag-${idx}">Copied ✓</span>
+        <button class="primary" onclick="copyAndOpen(${idx})">📋 Copy & open Instagram</button>
+        <label class="sent-check ${row.sent ? 'is-sent' : ''}" for="chk-${idx}">
+          <input type="checkbox" id="chk-${idx}" onchange="toggleSent(${idx})" ${row.sent ? 'checked' : ''}>
+          Sent
+        </label>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function updateSendBadge(){
+  document.getElementById('sendBadge').textContent = `${rows.filter(r=>r.sent).length}/${rows.length}`;
+}
+
+async function copyToClipboard(text){
+  try{
+    await navigator.clipboard.writeText(text);
+  }catch(e){
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+}
+
+function flashCopied(idx){
+  const flag = document.getElementById(`flag-${idx}`);
+  flag.classList.add('show');
+  setTimeout(()=>flag.classList.remove('show'), 1500);
+}
+
+async function copyAndOpen(idx){
+  const text = rows[idx].message || buildMessage(rows[idx].parts);
+  await copyToClipboard(text);
+  flashCopied(idx);
+  window.open(rows[idx].link, '_blank');
+  if(!rows[idx].sent){
+    rows[idx].sent = true;
+    const checkbox = document.getElementById(`chk-${idx}`);
+    checkbox.checked = true;
+    checkbox.parentElement.classList.add('is-sent');
+    document.getElementById(`send-${idx}`).classList.add('done');
+    updateSendBadge();
+  }
+}
+
+function toggleSent(idx){
+  const checkbox = document.getElementById(`chk-${idx}`);
+  rows[idx].sent = checkbox.checked;
+  checkbox.parentElement.classList.toggle('is-sent', rows[idx].sent);
+  document.getElementById(`send-${idx}`).classList.toggle('done', rows[idx].sent);
+  updateSendBadge();
+}
+
+// ---------- Handover export ----------
+function downloadHandoverCopy(){
+  if(rows.length === 0){ alert('Extract usernames and finalize messages first.'); return; }
+  let html = PRISTINE_HTML;
+  html = html.replace('let rows = [];', 'let rows = ' + JSON.stringify(rows) + ';');
+  // open straight on the Send tab for whoever receives this file
+  html = html.replace('class="tabpanel active" id="tab-usernames"', 'class="tabpanel" id="tab-usernames"');
+  html = html.replace('class="tabpanel" id="tab-send"', 'class="tabpanel active" id="tab-send"');
+  html = html.replace('class="active" data-tab="usernames"', 'data-tab="usernames"');
+  html = html.replace('data-tab="send" onclick="switchTab(\'send\')"', 'class="active" data-tab="send" onclick="switchTab(\'send\')"');
+  const blob = new Blob([html], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'outreach_handover.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// If this file was generated via "Download handover copy", rows arrives pre-populated — render immediately.
+if(rows.length){
+  renderUserList();
+  renderMessages();
+  renderSendList();
+  document.getElementById('headerSub').textContent = `${rows.length} creators loaded`;
+}
+</script>
+</body>
+</html>
