@@ -223,7 +223,19 @@
 // Captured before any rendering touches the DOM, so it's a clean template to re-export.
 const PRISTINE_HTML = document.documentElement.outerHTML;
 
+const STORAGE_KEY = 'faym_outreach_rows_v1';
 let rows = [];
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) rows = JSON.parse(saved);
+} catch(e) { rows = []; }
+
+function saveRows(){
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(rows)); } catch(e) {}
+}
+// Auto-save every second so nothing is lost on refresh/close.
+setInterval(saveRows, 1000);
+window.addEventListener('beforeunload', saveRows);
 
 // ---------- Phrase pools for variation (editable via the "Edit wording options" panel) ----------
 let openers = ["Hi!", "Hey!", "Hello!", "Hi there!"];
@@ -368,6 +380,7 @@ function parseUsernames(){
   renderMessages();
   renderSendList();
   document.getElementById('headerSub').textContent = `${rows.length} creators loaded`;
+  saveRows();
 }
 
 function renderUserList(){
@@ -534,7 +547,8 @@ function downloadHandoverCopy(){
   URL.revokeObjectURL(url);
 }
 
-// If this file was generated via "Download handover copy", rows arrives pre-populated — render immediately.
+// Rows can arrive pre-populated either from a saved browser session (localStorage)
+// or from a file generated via "Download handover copy" — render immediately either way.
 if(rows.length){
   renderUserList();
   renderMessages();
