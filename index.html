@@ -82,6 +82,12 @@
     font-size:11.5px; color:var(--muted); background:var(--panel-2);
     border:1px solid var(--line); padding:4px 10px; border-radius:20px;
   }
+  select.filter-select{
+    font-family:var(--font-ui); font-size:12.5px; font-weight:600; color:var(--text);
+    background:var(--panel-2); border:1px solid var(--line); border-radius:7px;
+    padding:8px 12px; cursor:pointer;
+  }
+  select.filter-select:focus{outline:none; border-color:var(--accent-dim);}
 
   ul.userlist{list-style:none; margin:20px 0 0; padding:0;}
   ul.userlist li{
@@ -109,14 +115,15 @@
   .msg-card .actions{margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;}
   .msg-card .actions button{padding:6px 11px; font-size:11.5px;}
 
-  .send-card{display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; border-left:4px solid var(--line);}
+  .send-card{display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; border-left:4px solid var(--line); border-right:4px solid transparent;}
   .send-card.pending{border-left-color:#4a5a4d;}
-  .send-card.done{opacity:0.45; filter:grayscale(0.3);}
-  .send-card.done:hover{opacity:0.85; filter:none;}
-  .send-card.status-sent{border-left-color:var(--accent);}
-  .send-card.status-followup{border-left-color:var(--warn);}
-  .send-card.status-badlead{border-left-color:#e05f5f;}
-  .send-card.status-delunavail{border-left-color:#7a8a9a;}
+  .send-card.done{opacity:0.5; filter:grayscale(0.2);}
+  .send-card.done:hover{opacity:0.9; filter:none;}
+  .send-card.status-sent{border-left-color:#4fa5a0;}
+  .send-card.status-followup{border-left-color:#c99a4a;}
+  .send-card.status-badlead{border-left-color:#b06a72;}
+  .send-card.status-delunavail{border-left-color:#7a8aa0;}
+  .send-card.has-reply{border-right-color:#9b87d6;}
   .send-card .left{display:flex; flex-direction:column; gap:2px; flex:1; min-width:220px;}
   .send-card .left .idx{font-family:var(--font-mono); font-size:11px; color:var(--muted);}
   .send-card a{color:var(--text); text-decoration:none; font-weight:650; font-size:14px; border-bottom:1px solid var(--accent-dim);}
@@ -136,15 +143,16 @@
     border:1px solid var(--line); background:var(--panel-2); color:var(--muted); font-weight:650;
   }
   .status-btn:hover{border-color:var(--accent-dim);}
-  .status-btn.sent.active{background:var(--accent); color:#0b1a10; border-color:var(--accent);}
-  .status-btn.followup.active{background:var(--warn); color:#2a1f05; border-color:var(--warn);}
-  .status-btn.badlead.active{background:#e05f5f; color:#2a0505; border-color:#e05f5f;}
-  .status-btn.delunavail.active{background:#7a8a9a; color:#0f1410; border-color:#7a8a9a;}
+  .status-btn.sent.active{background:#4fa5a0; color:#07211f; border-color:#4fa5a0;}
+  .status-btn.followup.active{background:#c99a4a; color:#241a05; border-color:#c99a4a;}
+  .status-btn.badlead.active{background:#b06a72; color:#210a0c; border-color:#b06a72;}
+  .status-btn.delunavail.active{background:#7a8aa0; color:#0f1410; border-color:#7a8aa0;}
   .status-pill{font-size:10.5px; padding:2px 9px; border-radius:20px; border:1px solid var(--line); color:var(--muted);}
-  .status-pill.sent{color:var(--accent); border-color:var(--accent-dim);}
-  .status-pill.followup{color:var(--warn); border-color:var(--warn);}
-  .status-pill.badlead{color:#e05f5f; border-color:#e05f5f;}
-  .status-pill.delunavail{color:#7a8a9a; border-color:#7a8a9a;}
+  .status-pill.sent{color:#4fa5a0; border-color:#4fa5a0;}
+  .status-pill.followup{color:#c99a4a; border-color:#c99a4a;}
+  .status-pill.badlead{color:#b06a72; border-color:#b06a72;}
+  .status-pill.delunavail{color:#7a8aa0; border-color:#7a8aa0;}
+  .status-pill.received{color:#9b87d6; border-color:#9b87d6;}
 
   .reply-row{display:flex; align-items:center; gap:6px;}
   input.reply-input{
@@ -152,9 +160,9 @@
     color:var(--text); font-size:12px; padding:6px 9px; width:150px; font-family:var(--font-mono);
   }
   input.reply-input:focus{outline:none; border-color:var(--accent-dim);}
-  .reply-saved{font-size:10.5px; color:var(--accent); opacity:0; transition:opacity .2s;}
+  input.reply-input.has-value{border-color:#9b87d6; color:#9b87d6;}
+  .reply-saved{font-size:10.5px; color:#9b87d6; opacity:0; transition:opacity .2s;}
   .reply-saved.show{opacity:1;}
-  .reply-existing{font-size:11.5px; color:var(--accent); font-family:var(--font-mono);}
 
   .sync-flag{font-size:10.5px; color:var(--muted);}
   .sync-flag.syncing{color:var(--warn);}
@@ -173,17 +181,17 @@
   .dash-card .num{font-size:28px; font-weight:750; font-family:var(--font-mono); line-height:1;}
   .dash-card .lbl{font-size:12px; color:var(--muted); margin-top:8px; font-weight:600;}
   .dash-card.c-total{border-top-color:var(--text);}
-  .dash-card.c-sent{border-top-color:var(--accent);}
-  .dash-card.c-sent .num{color:var(--accent);}
-  .dash-card.c-followup{border-top-color:var(--warn);}
-  .dash-card.c-followup .num{color:var(--warn);}
-  .dash-card.c-badlead{border-top-color:#e05f5f;}
-  .dash-card.c-badlead .num{color:#e05f5f;}
-  .dash-card.c-delunavail{border-top-color:#7a8a9a;}
-  .dash-card.c-delunavail .num{color:#7a8a9a;}
+  .dash-card.c-sent{border-top-color:#4fa5a0;}
+  .dash-card.c-sent .num{color:#4fa5a0;}
+  .dash-card.c-followup{border-top-color:#c99a4a;}
+  .dash-card.c-followup .num{color:#c99a4a;}
+  .dash-card.c-badlead{border-top-color:#b06a72;}
+  .dash-card.c-badlead .num{color:#b06a72;}
+  .dash-card.c-delunavail{border-top-color:#7a8aa0;}
+  .dash-card.c-delunavail .num{color:#7a8aa0;}
   .dash-card.c-pending{border-top-color:#4a5a4d;}
-  .dash-card.c-replies{border-top-color:var(--accent);}
-  .dash-card.c-replies .num{color:var(--accent);}
+  .dash-card.c-replies{border-top-color:#9b87d6;}
+  .dash-card.c-replies .num{color:#9b87d6;}
 
   .pool-editor{
     background:var(--panel); border:1px solid var(--line); border-radius:12px;
@@ -288,11 +296,16 @@
   <!-- TAB 3: SEND -->
   <section class="tabpanel" id="tab-send">
     <div class="toolbar">
-      <p class="hint" style="margin:0;">Copy the message and open the profile in one click, then paste it into their DMs. Check the box once sent — that updates the sheet live. If they reply with a number, drop it in the reply box to log it back.</p>
-      <label class="reply-row" style="cursor:pointer; user-select:none;">
-        <input type="checkbox" id="hideHandled" onchange="renderSendList()" style="width:15px;height:15px;accent-color:var(--accent);cursor:pointer;">
-        <span style="font-size:12px; color:var(--muted); font-weight:600;">Hide handled</span>
-      </label>
+      <p class="hint" style="margin:0;">Copy the message and open the profile in one click, then paste it into their DMs. Pick a status once you know the outcome. If they reply with a number, drop it in the reply box to log it back.</p>
+      <select id="sendFilter" class="filter-select" onchange="renderSendList()">
+        <option value="all">Show: All</option>
+        <option value="remaining">Remaining to send</option>
+        <option value="tocheck">Followup — number to check</option>
+        <option value="received">Number received</option>
+        <option value="sent">Sent</option>
+        <option value="badlead">Bad Lead</option>
+        <option value="delunavail">Del/Unavailable</option>
+      </select>
     </div>
     <div id="sendList"></div>
   </section>
@@ -628,6 +641,20 @@ function shuffleAll(){
 }
 
 // ---------- Tab 3: send ----------
+function matchesFilter(row, filter){
+  const status = row.status || 'Pending';
+  const hasReply = !!(row.reply && String(row.reply).trim() !== '');
+  switch(filter){
+    case 'remaining': return status === 'Pending';
+    case 'tocheck': return status === 'Followup';
+    case 'received': return hasReply;
+    case 'sent': return status === 'Sent';
+    case 'badlead': return status === 'Bad Lead';
+    case 'delunavail': return status === 'Del/Unavailable';
+    default: return true;
+  }
+}
+
 function renderSendList(){
   updateSendBadge();
   const list = document.getElementById('sendList');
@@ -636,20 +663,24 @@ function renderSendList(){
     list.innerHTML = `<div class="empty">Extract or load usernames first.</div>`;
     return;
   }
-  const hideHandled = document.getElementById('hideHandled')?.checked;
+  const filter = document.getElementById('sendFilter')?.value || 'all';
 
   rows.forEach((row, idx)=>{
-    const status = row.status || 'Pending';
-    if(hideHandled && status !== 'Pending') return;
+    if(!matchesFilter(row, filter)) return;
 
+    const status = row.status || 'Pending';
+    const hasReply = !!(row.reply && String(row.reply).trim() !== '');
     const card = document.createElement('div');
-    card.className = 'send-card' + (status !== 'Pending' ? ' done status-'+statusClass(status) : ' pending');
+    card.className = 'send-card'
+      + (status !== 'Pending' ? ' done status-'+statusClass(status) : ' pending')
+      + (hasReply ? ' has-reply' : '');
     card.id = `send-${idx}`;
     card.innerHTML = `
       <div class="left">
         <span class="idx">#${idx+1}</span>
         <a href="${row.link}" target="_blank" rel="noopener">${row.username}</a>
         ${status !== 'Pending' ? `<span class="status-pill ${statusClass(status)}">${status}</span>` : ''}
+        ${hasReply ? `<span class="status-pill received">📩 received</span>` : ''}
         <div class="preview">${row.message || buildMessage(row.parts)}</div>
       </div>
       <div class="right">
@@ -664,7 +695,7 @@ function renderSendList(){
           <button class="status-btn delunavail ${status==='Del/Unavailable'?'active':''}" onclick="setStatus(${idx},'Del/Unavailable')">🚫 Del/Unavail</button>
         </div>
         <div class="reply-row">
-          <input type="text" class="reply-input" id="reply-${idx}" placeholder="reply number…" value="${row.reply || ''}">
+          <input type="text" class="reply-input ${hasReply?'has-value':''}" id="reply-${idx}" placeholder="reply number…" value="${row.reply || ''}" oninput="onReplyInput(${idx}, this.value)">
           <button onclick="saveReply(${idx})">💾</button>
           <span class="reply-saved" id="replysaved-${idx}">Saved ✓</span>
           <span class="sync-flag" id="sync-${idx}"></span>
@@ -674,9 +705,14 @@ function renderSendList(){
     list.appendChild(card);
   });
 
-  if(list.innerHTML === '' && hideHandled){
-    list.innerHTML = `<div class="empty">All handled 🎉 — uncheck "Hide handled" to see them.</div>`;
+  if(list.innerHTML === '' ){
+    list.innerHTML = `<div class="empty">Nothing matches this filter.</div>`;
   }
+}
+
+function onReplyInput(idx, value){
+  const input = document.getElementById(`reply-${idx}`);
+  input.classList.toggle('has-value', value.trim() !== '');
 }
 
 function statusClass(status){
