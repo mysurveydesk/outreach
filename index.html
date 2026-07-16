@@ -299,10 +299,9 @@
       <p class="hint" style="margin:0;">Copy the message and open the profile in one click, then paste it into their DMs. Pick a status once you know the outcome. If they reply with a number, drop it in the reply box to log it back.</p>
       <select id="sendFilter" class="filter-select" onchange="renderSendList()">
         <option value="all">Show: All</option>
-        <option value="remaining">Remaining to send</option>
-        <option value="tocheck">Followup — number to check</option>
-        <option value="received">Number received</option>
-        <option value="sent">Sent</option>
+        <option value="remaining">Not picked — to send</option>
+        <option value="tocheck">Sent, no number yet — to check</option>
+        <option value="received">Numbers received</option>
         <option value="badlead">Bad Lead</option>
         <option value="delunavail">Del/Unavailable</option>
       </select>
@@ -646,9 +645,8 @@ function matchesFilter(row, filter){
   const hasReply = !!(row.reply && String(row.reply).trim() !== '');
   switch(filter){
     case 'remaining': return status === 'Pending';
-    case 'tocheck': return status === 'Followup';
+    case 'tocheck': return (status === 'Sent' || status === 'Followup') && !hasReply;
     case 'received': return hasReply;
-    case 'sent': return status === 'Sent';
     case 'badlead': return status === 'Bad Lead';
     case 'delunavail': return status === 'Del/Unavailable';
     default: return true;
