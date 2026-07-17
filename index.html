@@ -775,11 +775,24 @@ function flagSync(idx, state){
   else if(state === 'err'){ el.textContent = 'sync failed'; el.className = 'sync-flag err'; }
 }
 
+// FIX: window.open must fire synchronously inside the click handler, before
+// any `await`. Browsers only trust a popup as "user initiated" for the
+// duration of the synchronous part of the event handler — once you await
+// something (even a fast clipboard write), that trust window can expire and
+// the browser silently blocks the new tab, with no console error. Opening
+// first (synchronously) and copying second fixes this reliably across browsers.
 async function copyAndOpen(idx){
   const text = rows[idx].message || buildMessage(rows[idx].parts);
+
+  // Open the profile FIRST, synchronously, while still inside the trusted
+  // click gesture — this is what popup blockers check.
+  window.open(rows[idx].link, '_blank', 'noopener,noreferrer');
+
+  // Now do the (possibly async) clipboard write. Safe to await here since
+  // the popup has already been dispatched.
   await copyToClipboard(text);
   flashCopied(idx);
-  window.open(rows[idx].link, '_blank');
+
   rows[idx].message = text;
   saveRows();
   // status buttons (Sent / Followup / Bad Lead / Del/Unavailable) are right there on the card —
